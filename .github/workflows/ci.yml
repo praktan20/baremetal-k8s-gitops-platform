@@ -1,0 +1,35 @@
+name: Ansible CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/*]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install ansible ansible-lint yamllint
+
+      - name: Install Galaxy roles
+        run: |
+          ansible-galaxy install -r ansible/requirements.yml
+
+      - name: YAML lint
+        run: yamllint ansible/
+
+      - name: Ansible lint
+        run: ansible-lint ansible/
+
+      - name: Syntax check
+        run: ansible-playbook ansible/site.yml --syntax-check
